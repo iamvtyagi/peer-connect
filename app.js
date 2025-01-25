@@ -41,7 +41,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on("message", ({ room, message }) => {
-        console.log(`Message in room ${room}:`, message);
+        // console.log(`Message in room ${room}:`, message);
         socket.broadcast.to(room).emit('message', { message });
     });
 
@@ -60,6 +60,29 @@ io.on('connection', (socket) => {
             }
         });
     });
+
+    // webrtc part -> video calling part 
+    socket.on("signalingMessage", (data)=>{
+        socket.broadcast.to(data.room).emit("signalingMessage", data.message);
+    })
+
+    socket.on("startVideoCall", ({room})=>{
+        console.log(`Incoming call from room ${room}`);
+        socket.broadcast.to(room).emit("incomingCall")
+    })
+
+    socket.on("acceptCall", ({room})=>{
+        console.log(`Call accepted from room ${room}`);
+        socket.broadcast.to(room).emit("callAccepted");
+    })
+
+    socket.on("rejectCall", ({room})=>{
+        socket.broadcast.to(room).emit("callRejected");
+    })
+
+    
+
+
 });
 
 app.use(express.json());

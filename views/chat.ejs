@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <title>Chat</title>
     <style>
         * {
@@ -13,107 +13,244 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1, #4f46e5);
+            --neon-shadow: 0 0 10px rgba(99, 102, 241, 0.5), 0 0 20px rgba(99, 102, 241, 0.3);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            background: linear-gradient(45deg, #0f172a, #1e293b);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+        }
+
         #videos {
             display: grid;
             grid-template-columns: 1fr;
             height: 100vh;
             overflow: hidden;
+            position: relative;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
         }
 
         .video-player {
-            background-color: black;
+            background-color: #0f172a;
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 24px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .smallFrame {
             position: fixed;
-            bottom: 100px;
+            bottom: 120px;
             right: 20px;
-            height: 170px;
-            width: 300px;
-            border-radius: 12px;
+            height: 200px;
+            width: 350px;
+            border-radius: 20px;
             z-index: 10;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: var(--neon-shadow);
+            transform: scale(1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            border: 2px solid var(--glass-border);
+        }
+
+        .smallFrame:hover {
+            transform: scale(1.05);
         }
 
         #controls {
             position: fixed;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 1.5em;
-            padding: 1em;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 50px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            gap: 2em;
+            padding: 1.5em;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 100px;
+            box-shadow: var(--neon-shadow);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
         }
 
         .control-container {
-            background-color: #6df966;
-            padding: 1.25rem;
+            background: var(--primary-gradient);
+            padding: 1.5rem;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--neon-shadow);
         }
 
         .control-container:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.7);
         }
 
         .control-container svg {
-            height: 24px;
-            width: 24px;
+            height: 28px;
+            width: 28px;
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
         }
 
         #leave-btn {
-            background-color: rgb(255, 80, 80, 1);
+            background: linear-gradient(135deg, #ef4444, #dc2626);
         }
 
         .message-bubble {
             max-width: 80%;
             word-wrap: break-word;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             line-height: 1.5;
             position: relative;
-            padding: 16px;
-            border-radius: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .message-bubble:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+            padding: 16px 20px;
+            border-radius: 24px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--neon-shadow);
+            animation: fadeInUp 0.5s ease forwards;
         }
 
         .message-own {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: white;
-            border-bottom-right-radius: 5px;
+            background: var(--primary-gradient);
+            border-bottom-right-radius: 8px;
             margin-left: auto;
+            animation: slideInRight 0.5s ease forwards;
         }
 
         .message-other {
-            background: white;
-            color: #1f2937;
-            border-bottom-left-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 8px;
             margin-right: auto;
+            animation: slideInLeft 0.5s ease forwards;
         }
 
-        @media screen and (max-width: 640px) {
+        #incoming-call {
+            backdrop-filter: blur(20px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        #incoming-call .bg-white {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--neon-shadow);
+            animation: zoomIn 0.5s ease;
+        }
+
+        #chatform {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--neon-shadow);
+        }
+
+        #messagebox {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        #messagebox:focus {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: var(--neon-shadow);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .smallFrame {
+                height: 150px;
+                width: 200px;
+                bottom: 100px;
+                right: 10px;
+            }
+
+            #controls {
+                gap: 1em;
+                padding: 1em;
+                bottom: 20px;
+            }
+
+            .control-container {
+                padding: 1.2rem;
+            }
+
+            .control-container svg {
+                height: 24px;
+                width: 24px;
+            }
+
+            .message-bubble {
+                max-width: 90%;
+                padding: 14px;
+                margin-bottom: 12px;
+            }
+
+            #chatform {
+                margin: 0 1rem 1rem;
+                padding: 0.75rem;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
             .smallFrame {
                 height: 120px;
                 width: 160px;
-                bottom: 80px;
-                right: 10px;
+                bottom: 90px;
+            }
+
+            #controls {
+                gap: 0.75em;
+                padding: 0.75em;
             }
 
             .control-container {
@@ -124,86 +261,74 @@
                 height: 20px;
                 width: 20px;
             }
-
-            .message-bubble {
-                max-width: 90%;
-                padding: 12px;
-            }
-
-            #controls {
-                gap: 1em;
-                padding: 0.75em;
-            }
-
-            body {
-                padding: 1rem !important;
-            }
         }
     </style>
     <link href="/css/style.css" rel="stylesheet">
 </head>
 
-<body class="flex flex-col h-dvh bg-gradient-to-br from-gray-100 to-gray-200 p-4 md:p-9">
+<body class="flex flex-col h-dvh p-4 md:p-6">
     <%- include('partials/header') %>
-    <div class="fixed videoblock hidden z-[222] w-full h-svh">
-        <div id="videos">
+    
+    <div class="fixed videoblock hidden animate__animated animate__fadeIn z-[222] w-full h-svh">
+        <div id="videos" class="animate__animated animate__zoomIn">
             <video class="video-player" id="localVideo" autoplay muted playsinline></video>
             <video class="video-player" id="remoteVideo" autoplay playsinline></video>
         </div>
         <div id="controls">
             <div class="control-container" id="cameraButton">
                 <svg width="21" height="14" viewBox="0 0 21 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M20.525 2.149C20.365 2.05 20.183 2 20 2C19.847 2 19.694 2.035 19.553 2.105L17 3.382V3C17 1.346 15.654 0 14 0H3C1.346 0 0 1.346 0 3V11C0 12.654 1.346 14 3 14H14C15.654 14 17 12.654 17 11V10.618L19.553 11.894C19.694 11.965 19.847 12 20 12C20.183 12 20.365 11.95 20.525 11.851C20.82 11.668 21 11.347 21 11V3C21 2.653 20.82 2.332 20.525 2.149ZM5 8.5C4.171 8.5 3.5 7.829 3.5 7C3.5 6.171 4.171 5.5 5 5.5C5.829 5.5 6.5 6.171 6.5 7C6.5 7.829 5.829 8.5 5 8.5Z"
-                        fill="white" />
-                </svg>
-            </div>
-
-            <div class="control-container" id="hangup">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M0 0h24v24H0z" fill="red" />
-                    <path
-                        d="M20 15.5c-.78 0-1.55-.3-2.12-.88l-1.43-1.42a4.007 4.007 0 0 0-5.54 0l-1.43 1.42A2.983 2.983 0 0 1 4 15.5c-.78 0-1.55-.3-2.12-.88A2.983 2.983 0 0 1 1 12.5a2.983 2.983 0 0 1 .88-2.12l7-7a4.007 4.007 0 0 1 5.54 0l7 7c.58.58.88 1.34.88 2.12s-.3 1.55-.88 2.12c-.58.58-1.34.88-2.12.88z" />
+                    <path d="M20.525 2.149C20.365 2.05 20.183 2 20 2C19.847 2 19.694 2.035 19.553 2.105L17 3.382V3C17 1.346 15.654 0 14 0H3C1.346 0 0 1.346 0 3V11C0 12.654 1.346 14 3 14H14C15.654 14 17 12.654 17 11V10.618L19.553 11.894C19.694 11.965 19.847 12 20 12C20.183 12 20.365 11.95 20.525 11.851C20.82 11.668 21 11.347 21 11V3C21 2.653 20.82 2.332 20.525 2.149ZM5 8.5C4.171 8.5 3.5 7.829 3.5 7C3.5 6.171 4.171 5.5 5 5.5C5.829 5.5 6.5 6.171 6.5 7C6.5 7.829 5.829 8.5 5 8.5Z" fill="white"/>
                 </svg>
             </div>
 
             <div class="control-container" id="micButton">
                 <svg width="20" height="20" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M7 12.5C8.7 12.5 10 11.2 10 9.5V3.5C10 1.8 8.7 0.5 7 0.5C5.3 0.5 4 1.8 4 3.5V9.5C4 11.2 5.3 12.5 7 12.5ZM12.3 9.5C12.3 12.5 9.8 14.6 7 14.6C4.2 14.6 1.7 12.5 1.7 9.5H0C0 12.9 2.7 15.7 6 16.2V19.5H8V16.2C11.3 15.7 14 12.9 14 9.5H12.3Z"
-                        fill="white" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M7 12.5C8.7 12.5 10 11.2 10 9.5V3.5C10 1.8 8.7 0.5 7 0.5C5.3 0.5 4 1.8 4 3.5V9.5C4 11.2 5.3 12.5 7 12.5ZM12.3 9.5C12.3 12.5 9.8 14.6 7 14.6C4.2 14.6 1.7 12.5 1.7 9.5H0C0 12.9 2.7 15.7 6 16.2V19.5H8V16.2C11.3 15.7 14 12.9 14 9.5H12.3Z" fill="white"/>
+                </svg>
+            </div>
+
+            <div class="control-container" id="hangup">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.73-1.68-1.36-2.66-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/>
                 </svg>
             </div>
         </div>
     </div>
-    <div id="incoming-call"
-        class="fixed hidden z-[222] w-full h-dvh bg-gray-900 bg-opacity-75 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-md text-center">
-            <p class="mb-4">Incoming Call...</p>
-            <button id="accept-call" class="bg-green-500 text-white py-2 px-4 rounded-md">Accept</button>
-            <button id="reject-call" class="bg-red-500 text-white py-2 px-4 rounded-md ml-2">Reject</button>
+
+    <div id="incoming-call" class="fixed hidden z-[222] w-full h-dvh bg-opacity-75 flex items-center justify-center">
+        <div class="p-8 rounded-2xl text-center transform transition-all">
+            <p class="mb-6 text-xl font-medium text-white animate__animated animate__pulse animate__infinite">Incoming Call...</p>
+            <div class="flex gap-4 justify-center">
+                <button id="accept-call" class="bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-xl hover:from-green-600 hover:to-green-700 transform transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 shadow-lg">
+                    Accept
+                </button>
+                <button id="reject-call" class="bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-6 rounded-xl hover:from-red-600 hover:to-red-700 transform transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 shadow-lg">
+                    Reject
+                </button>
+            </div>
         </div>
     </div>
+
     <main class="flex-1 p-4 overflow-y-auto relative mb-4" id="message-container">
-        <div class="text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full md:w-2/3 text-center nobody px-4">
+        <div class="text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full md:w-2/3 text-center nobody px-4 animate__animated animate__fadeIn">
             <p class="text-lg md:text-xl font-medium">bhagwaan kasam koi nahi hai yaha, ruko shaayad koi aajaye.</p>
         </div>
     </main>
-    <form id="chatform" class="bg-white rounded-2xl shadow-lg p-4 md:p-6 mx-4 md:mx-9 mb-4 flex gap-3 items-center">
+
+    <form id="chatform" class="rounded-2xl shadow-lg p-4 md:p-6 mx-4 md:mx-9 mb-4 flex gap-3 items-center transform transition-all duration-300">
         <input type="hidden" id="userid" value="">
         <input type="text" id="messagebox"
-            class="flex-1 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base md:text-lg transition-all duration-200"
+            class="flex-1 rounded-xl px-4 py-3 focus:outline-none text-base md:text-lg transition-all duration-300"
             placeholder="Type a message...">
         <button type="submit"
-            class="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2 font-medium">
+            class="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transform transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 font-medium shadow-lg">
             <span class="hidden md:inline">Send</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
         </button>
     </form>
-    <video id="local-video" class="hidden" autoplay></video>
-    <video id="remote-video" class="hidden" autoplay></video>
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
     integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
@@ -228,7 +353,7 @@
         socket.on("message", function(data) {
             console.log(`Message in room ${room}:`, data);
             // receiveMessage(JSON.stringify(data));
-            receiveMessage(data.message);
+            receiveMessage(`🙈: ${data.message}`);
         })
 
         // receiveMessage("you joined the room");
@@ -272,9 +397,248 @@
             event.preventDefault();
             socket.emit("message", { room: room, message: messagebox.value });
             console.log("roooom", room)
-            attachMessage(messagebox.value);
+            attachMessage(`👹: ${messagebox.value}`);
             messagebox.value = "";
         })
+
+   
+
+        // webrtc section begins 
+        let localStream;
+        let remoteStream;
+        let peerConnection;
+        let inCall = false;
+
+        const rtcSettings = {
+            iceServers: [
+                {
+                    urls: [
+                        'stun:stun.l.google.com:19302',
+                        'stun:stun1.l.google.com:19302',
+                        'stun:stun2.l.google.com:19302',
+                        'stun:stun3.l.google.com:19302',
+                        'stun:stun4.l.google.com:19302'
+
+                    ]
+                }
+            ]
+        }
+
+        const initilize = async () => {
+            socket.on("signalingMessage", handleSignalingMessage)
+
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: true
+                })
+                document.querySelector("#localVideo").srcObject = localStream;
+                document.querySelector("#localVideo").style.display = "block";
+
+                initiateOffer();
+                inCall = true;
+
+            } catch(err) {
+                console.log("browser rejected the permission", err)
+            }
+        }
+
+        const initiateOffer = async () => {
+            await createPeerConnection();
+            try {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                socket.emit("signalingMessage", {
+                    room,
+                    message: JSON.stringify({
+                        type: "offer",
+                        offer
+                    })
+                })
+            } catch(err) {
+                console.log("error in creating offer", err)
+            }
+        }
+
+        const createPeerConnection = async () => {
+            peerConnection = new RTCPeerConnection(rtcSettings);  
+            remoteStream = new MediaStream(); 
+            
+            document.querySelector("#remoteVideo").srcObject = remoteStream;
+            document.querySelector("#remoteVideo").style.display = "block";
+            document.querySelector('#localVideo').classList.add("smallFrame")
+
+            if(localStream) {
+                localStream.getTracks().forEach(track => {  
+                    peerConnection.addTrack(track, localStream);
+                })
+            }
+
+            peerConnection.ontrack = (event) => {
+                event.streams[0].getTracks().forEach(track => {
+                    remoteStream.addTrack(track);
+                })
+            }
+
+            peerConnection.onicecandidate = (event) => {
+                if(event.candidate) {
+                    console.log("Sending ice candidate....")
+                    socket.emit("signalingMessage", {
+                        room,
+                        message: JSON.stringify({
+                            type: "candidate",
+                            candidate: event.candidate
+                        })
+                    })
+                }
+            }
+
+            peerConnection.onconnectionstatechange = () => {
+                console.log("Connection state:", peerConnection.connectionState);
+                if (peerConnection.connectionState === 'connected') {
+                    console.log('Peers connected!');
+                }
+            }
+
+            peerConnection.onicegatheringstatechange = () => {
+                console.log("ICE gathering state:", peerConnection.iceGatheringState);
+            }
+
+            peerConnection.onsignalingstatechange = () => {
+                console.log("Signaling state:", peerConnection.signalingState);
+            }
+        }
+
+        const handleSignalingMessage = async (message) => {
+            console.log("Received signaling message:", message);
+            const { type, offer, answer, candidate } = JSON.parse(message);
+            
+            try {
+                if (type === "offer") {
+                    console.log("Handling offer");
+                    await handleOffer(offer);
+                }
+                else if (type === "answer") {
+                    console.log("Handling answer");
+                    await handleAnswer(answer);
+                }
+                else if (type === "candidate" && peerConnection) {
+                    console.log("Handling ICE candidate");
+                    await peerConnection.addIceCandidate(candidate);
+                }
+                else if (type === "hangup") {
+                    handleHangup();
+                }
+            } catch (err) {
+                console.error("Error in handleSignalingMessage:", err);
+            }
+        }
+
+        const handleOffer = async (offer) => {
+            try {
+                if (!localStream) {
+                    localStream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                        video: true
+                    });
+                    document.querySelector("#localVideo").srcObject = localStream;
+                    document.querySelector("#localVideo").style.display = "block";
+                }
+
+                await createPeerConnection();
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                
+                socket.emit("signalingMessage", {
+                    room,
+                    message: JSON.stringify({
+                        type: "answer",
+                        answer
+                    })
+                });
+                
+                inCall = true;
+            } catch(err) {
+                console.error("Error in handling offer:", err);
+            }
+        }
+
+        const handleAnswer = async (answer) => {
+            try {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            } catch(err) {
+                console.error("Error in handling answer:", err);
+            }
+        }
+
+        const handleHangup = () => {
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            if (remoteStream) {
+                remoteStream.getTracks().forEach(track => track.stop());
+            }
+            document.querySelector('.videoblock').classList.add("hidden");
+            document.querySelector("#localVideo").srcObject = null;
+            document.querySelector("#remoteVideo").srcObject = null;
+            inCall = false;
+        }
+
+        document.querySelector("#video-call-btn").addEventListener("click", () => {
+            //  alert("video call btn clicked")
+            socket.emit("startVideoCall", { room })
+        })
+
+        socket.on("incomingCall", () => {
+            document.querySelector("#incoming-call").classList.remove("hidden");
+        })
+
+        document.querySelector("#accept-call").addEventListener("click", () => {
+            document.querySelector("#incoming-call").classList.add("hidden");
+            initilize();
+            document.querySelector('.videoblock').classList.remove("hidden");
+            socket.emit("acceptCall", { room })
+        })
+
+        socket.on("callAccepted", () => {
+            initilize();
+            document.querySelector('.videoblock').classList.remove("hidden");
+
+        }) 
+     
+
+        document.querySelector('#reject-call').addEventListener("click", () => {
+            document.querySelector("#incoming-call").classList.add("hidden");
+            socket.emit("rejectCall", { room })
+        })
+
+        socket.on("callRejected", () => {
+            document.querySelector("#incoming-call").classList.add("hidden");
+            alert("call rejected")
+        })
+
+     document.querySelector('#hangup').addEventListener("click", () => {
+             if(peerConnection){
+                peerConnection.close();
+                peerConnection = null;
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+                remoteStream.getTracks().forEach(track => track.stop());
+                remoteStream = null;
+
+                document.querySelector('.videoblock').classList.add("hidden");
+                socket.emit("signalingMessage", { room, message: JSON.stringify({ type: "hangup" }) })
+                inCall = false;
+             }
+     })
+
+
+
     </script>
 </body>
 
