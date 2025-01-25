@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <title>Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #videos {
+            display: grid;
+            grid-template-columns: 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .video-player {
+            background-color: black;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .smallFrame {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            height: 170px;
+            width: 300px;
+            border-radius: 12px;
+            z-index: 10;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1.5em;
+            padding: 1em;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-container {
+            background-color: #6df966;
+            padding: 1.25rem;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-container:hover {
+            transform: scale(1.1);
+        }
+
+        .control-container svg {
+            height: 24px;
+            width: 24px;
+        }
+
+        #leave-btn {
+            background-color: rgb(255, 80, 80, 1);
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+            margin-bottom: 12px;
+            line-height: 1.5;
+            position: relative;
+            padding: 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .message-bubble:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .message-own {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border-bottom-right-radius: 5px;
+            margin-left: auto;
+        }
+
+        .message-other {
+            background: white;
+            color: #1f2937;
+            border-bottom-left-radius: 5px;
+            margin-right: auto;
+        }
+
+        @media screen and (max-width: 640px) {
+            .smallFrame {
+                height: 120px;
+                width: 160px;
+                bottom: 80px;
+                right: 10px;
+            }
+
+            .control-container {
+                padding: 1rem;
+            }
+
+            .control-container svg {
+                height: 20px;
+                width: 20px;
+            }
+
+            .message-bubble {
+                max-width: 90%;
+                padding: 12px;
+            }
+
+            #controls {
+                gap: 1em;
+                padding: 0.75em;
+            }
+
+            body {
+                padding: 1rem !important;
+            }
+        }
+    </style>
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body class="flex flex-col h-dvh bg-gradient-to-br from-gray-100 to-gray-200 p-4 md:p-9">
+    <%- include('partials/header') %>
+    <div class="fixed videoblock hidden z-[222] w-full h-svh">
+        <div id="videos">
+            <video class="video-player" id="localVideo" autoplay muted playsinline></video>
+            <video class="video-player" id="remoteVideo" autoplay playsinline></video>
+        </div>
+        <div id="controls">
+            <div class="control-container" id="cameraButton">
+                <svg width="21" height="14" viewBox="0 0 21 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M20.525 2.149C20.365 2.05 20.183 2 20 2C19.847 2 19.694 2.035 19.553 2.105L17 3.382V3C17 1.346 15.654 0 14 0H3C1.346 0 0 1.346 0 3V11C0 12.654 1.346 14 3 14H14C15.654 14 17 12.654 17 11V10.618L19.553 11.894C19.694 11.965 19.847 12 20 12C20.183 12 20.365 11.95 20.525 11.851C20.82 11.668 21 11.347 21 11V3C21 2.653 20.82 2.332 20.525 2.149ZM5 8.5C4.171 8.5 3.5 7.829 3.5 7C3.5 6.171 4.171 5.5 5 5.5C5.829 5.5 6.5 6.171 6.5 7C6.5 7.829 5.829 8.5 5 8.5Z"
+                        fill="white" />
+                </svg>
+            </div>
+
+            <div class="control-container" id="hangup">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M0 0h24v24H0z" fill="red" />
+                    <path
+                        d="M20 15.5c-.78 0-1.55-.3-2.12-.88l-1.43-1.42a4.007 4.007 0 0 0-5.54 0l-1.43 1.42A2.983 2.983 0 0 1 4 15.5c-.78 0-1.55-.3-2.12-.88A2.983 2.983 0 0 1 1 12.5a2.983 2.983 0 0 1 .88-2.12l7-7a4.007 4.007 0 0 1 5.54 0l7 7c.58.58.88 1.34.88 2.12s-.3 1.55-.88 2.12c-.58.58-1.34.88-2.12.88z" />
+                </svg>
+            </div>
+
+            <div class="control-container" id="micButton">
+                <svg width="20" height="20" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M7 12.5C8.7 12.5 10 11.2 10 9.5V3.5C10 1.8 8.7 0.5 7 0.5C5.3 0.5 4 1.8 4 3.5V9.5C4 11.2 5.3 12.5 7 12.5ZM12.3 9.5C12.3 12.5 9.8 14.6 7 14.6C4.2 14.6 1.7 12.5 1.7 9.5H0C0 12.9 2.7 15.7 6 16.2V19.5H8V16.2C11.3 15.7 14 12.9 14 9.5H12.3Z"
+                        fill="white" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div id="incoming-call"
+        class="fixed hidden z-[222] w-full h-dvh bg-gray-900 bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-md text-center">
+            <p class="mb-4">Incoming Call...</p>
+            <button id="accept-call" class="bg-green-500 text-white py-2 px-4 rounded-md">Accept</button>
+            <button id="reject-call" class="bg-red-500 text-white py-2 px-4 rounded-md ml-2">Reject</button>
+        </div>
+    </div>
+    <main class="flex-1 p-4 overflow-y-auto relative mb-4" id="message-container">
+        <div class="text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full md:w-2/3 text-center nobody px-4">
+            <p class="text-lg md:text-xl font-medium">bhagwaan kasam koi nahi hai yaha, ruko shaayad koi aajaye.</p>
+        </div>
+    </main>
+    <form id="chatform" class="bg-white rounded-2xl shadow-lg p-4 md:p-6 mx-4 md:mx-9 mb-4 flex gap-3 items-center">
+        <input type="hidden" id="userid" value="">
+        <input type="text" id="messagebox"
+            class="flex-1 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base md:text-lg transition-all duration-200"
+            placeholder="Type a message...">
+        <button type="submit"
+            class="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2 font-medium">
+            <span class="hidden md:inline">Send</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+            </svg>
+        </button>
+    </form>
+    <video id="local-video" class="hidden" autoplay></video>
+    <video id="remote-video" class="hidden" autoplay></video>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
+    integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
+    crossorigin="anonymous"></script>
+
+    <script>
+        const socket = io();
+
+        const chatform = document.querySelector("#chatform");
+        const messagebox = document.querySelector("#messagebox");
+        const messagecontainer = document.querySelector("#message-container");
+        let room;
+         
+        socket.emit("joinroom"); 
+
+        socket.on("joined", function(roomname) {
+            console.log("Joined room: " + roomname);
+            room = roomname;
+            document.querySelector(".nobody").classList.add("hidden");
+        });
+
+        socket.on("message", function(data) {
+            console.log(`Message in room ${room}:`, data);
+            // receiveMessage(JSON.stringify(data));
+            receiveMessage(data.message);
+        })
+
+        // receiveMessage("you joined the room");
+
+
+        // attachMessage("you joined the room");
+
+        function attachMessage(message) {
+            const userMessageContainer = document.createElement('div');
+            userMessageContainer.classList.add('flex', 'my-3', 'justify-end', 'px-4');
+
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.classList.add('message-bubble', 'message-own');
+
+            const userMessageText = document.createElement('p');
+            userMessageText.textContent = message;
+
+            userMessageDiv.appendChild(userMessageText);
+            userMessageContainer.appendChild(userMessageDiv);
+            document.getElementById('message-container').appendChild(userMessageContainer);
+            document.querySelector("#message-container").scrollTop = document.querySelector("#message-container").scrollHeight;
+        }
+
+        function receiveMessage(message) {
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('flex', 'my-3', 'justify-start', 'px-4');
+
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message-bubble', 'message-other');
+
+            const messageText = document.createElement('p');
+            messageText.textContent = message;
+
+            messageDiv.appendChild(messageText);
+            messageContainer.appendChild(messageDiv);
+            document.getElementById('message-container').appendChild(messageContainer);
+            document.querySelector("#message-container").scrollTop = document.querySelector("#message-container").scrollHeight;
+        }
+
+        chatform.addEventListener("submit",function(event) {
+            event.preventDefault();
+            socket.emit("message", { room: room, message: messagebox.value });
+            console.log("roooom", room)
+            attachMessage(messagebox.value);
+            messagebox.value = "";
+        })
+    </script>
+</body>
+
+</html>
