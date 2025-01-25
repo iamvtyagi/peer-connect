@@ -5,6 +5,8 @@ const socketio = require('socket.io');
 const http = require('http');
 const path = require('path');
 
+require('dotenv').config();
+
 const server = http.createServer(app);
 const io = socketio(server);
 
@@ -67,6 +69,8 @@ app.set('view engine','ejs');
 
 app.use('/',indexRouter);
 
-server.listen(3000,()=>{
-    console.log('server started on port 3000');
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT,()=>{
+    console.log(`server started on port ${PORT}`);
 });
