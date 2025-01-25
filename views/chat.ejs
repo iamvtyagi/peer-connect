@@ -81,6 +81,17 @@
             transition: all 0.3s ease;
         }
 
+        @media screen and (max-width: 768px) {
+            #controls {
+                left: 20px;
+                transform: none;
+                flex-direction: column;
+                gap: 1em;
+                padding: 1em;
+                border-radius: 50px;
+            }
+        }
+
         .control-container {
             background: var(--primary-gradient);
             padding: 1.5rem;
@@ -102,6 +113,17 @@
             height: 28px;
             width: 28px;
             filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+        }
+
+        @media screen and (max-width: 768px) {
+            .control-container {
+                padding: 1.2rem;
+            }
+
+            .control-container svg {
+                height: 24px;
+                width: 24px;
+            }
         }
 
         #leave-btn {
@@ -218,15 +240,6 @@
                 gap: 1em;
                 padding: 1em;
                 bottom: 20px;
-            }
-
-            .control-container {
-                padding: 1.2rem;
-            }
-
-            .control-container svg {
-                height: 24px;
-                width: 24px;
             }
 
             .message-bubble {
